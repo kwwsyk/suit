@@ -1,4 +1,4 @@
-package com.kwwsyk.suit.TreasureMarker.neoforge.platform;
+package com.kwwsyk.suit.treasure_marker.neoforge.platform;
 
 import com.kwwsyk.suit.treasure_marker.platform.services.IPlatformHelper;
 import net.neoforged.fml.ModList;

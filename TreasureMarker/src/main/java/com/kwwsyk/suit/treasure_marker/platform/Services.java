@@ -1,7 +1,8 @@
-package com.example.examplemod.platform;
+package com.kwwsyk.suit.treasure_marker.platform;
 
-import com.example.examplemod.Constants;
-import com.example.examplemod.platform.services.IPlatformHelper;
+
+import com.kwwsyk.suit.treasure_marker.Constants;
+import com.kwwsyk.suit.treasure_marker.platform.services.IPlatformHelper;
 
 import java.util.ServiceLoader;
 

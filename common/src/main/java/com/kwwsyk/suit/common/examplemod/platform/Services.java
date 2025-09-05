@@ -1,7 +1,7 @@
-package com.example.examplemod.platform;
+package com.kwwsyk.suit.common.platform;
 
-import com.example.examplemod.Constants;
-import com.example.examplemod.platform.services.IPlatformHelper;
+import com.kwwsyk.suit.common.Constants;
+import com.kwwsyk.suit.common.platform.services.IPlatformHelper;
 
 import java.util.ServiceLoader;
 

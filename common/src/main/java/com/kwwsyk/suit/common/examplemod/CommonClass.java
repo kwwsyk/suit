@@ -1,6 +1,6 @@
-package com.example.examplemod;
+package com.kwwsyk.suit.common;
 
-import com.example.examplemod.platform.Services;
+import com.kwwsyk.suit.common.platform.Services;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Items;
 

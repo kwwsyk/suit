@@ -1,6 +1,6 @@
-package com.example.examplemod.mixin;
+package com.kwwsyk.suit.fabric.mixin;
 
-import com.example.examplemod.Constants;
+import com.kwwsyk.suit.common.Constants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.TitleScreen;
 import org.spongepowered.asm.mixin.Mixin;

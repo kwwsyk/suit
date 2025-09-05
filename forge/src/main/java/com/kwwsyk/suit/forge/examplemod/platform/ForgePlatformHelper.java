@@ -1,6 +1,6 @@
-package com.example.examplemod.platform;
+package com.kwwsyk.suit.forge.platform;
 
-import com.example.examplemod.platform.services.IPlatformHelper;
+import com.kwwsyk.suit.forge.platform.services.IPlatformHelper;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.loading.FMLLoader;
 

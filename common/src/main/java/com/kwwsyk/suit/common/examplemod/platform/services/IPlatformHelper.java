@@ -1,4 +1,4 @@
-package com.example.examplemod.platform.services;
+package com.kwwsyk.suit.common.platform.services;
 
 public interface IPlatformHelper {
 

@@ -8,7 +8,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.MapItem;
 import net.minecraft.world.item.component.MapDecorations;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -16,8 +15,10 @@ import net.minecraft.world.phys.Vec3;
 import javax.annotation.Nullable;
 import java.util.Map;
 
-
-public final class Marker {
+/**
+ * Waypoint command helper class for mod journeyMap
+ */
+public final class JMapMarker {
 
     public static final String command = "jm waypoint create \"%s\" %s %.2f %.2f %.2f %s @s";
     public static final String translation = "The waypoint command has be executed.";
@@ -33,13 +34,6 @@ public final class Marker {
         String template = command;
         if(TreasureMarker.getInstance()!=null) template = TreasureMarker.getInstance().getCommandTemplate();
         return String.format(template,waypointName,dimension,x,y,z,color!=null?color:"aqua");
-    }
-
-    public static String JMapWaypointCommand(String waypointName, String dimension,
-                                             double x, double y , double z, int color){
-        String template = command;
-        if(TreasureMarker.getInstance()!=null) template = TreasureMarker.getInstance().getCommandTemplate();
-        return String.format(template,waypointName,dimension,x,y,z,color);
     }
 
     public static void JMapMark(Item mapItem, Level level, Player player, InteractionHand hand){

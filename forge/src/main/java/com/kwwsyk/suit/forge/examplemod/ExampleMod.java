@@ -1,4 +1,4 @@
-package com.example.examplemod;
+package com.kwwsyk.suit.forge;
 
 import net.minecraftforge.fml.common.Mod;
 
@@ -12,8 +12,8 @@ public class ExampleMod {
         // project.
 
         // Use Forge to bootstrap the Common mod.
-        Constants.LOG.info("Hello Forge world!");
-        CommonClass.init();
+        com.kwwsyk.suit.common.Constants.LOG.info("Hello Forge world!");
+        com.kwwsyk.suit.common.CommonClass.init();
 
     }
 }

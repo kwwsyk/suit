@@ -1,4 +1,4 @@
-package com.example.examplemod;
+package com.kwwsyk.suit.neoforge;
 
 
 import net.neoforged.bus.api.IEventBus;
@@ -14,8 +14,8 @@ public class ExampleMod {
         // project.
 
         // Use NeoForge to bootstrap the Common mod.
-        Constants.LOG.info("Hello NeoForge world!");
-        CommonClass.init();
+        com.kwwsyk.suit.common.Constants.LOG.info("Hello NeoForge world!");
+        com.kwwsyk.suit.common.CommonClass.init();
 
     }
 }

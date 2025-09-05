@@ -1,6 +1,10 @@
 plugins {
-    id 'multiloader-loader'
+    id 'multiloader-common'
     id 'net.neoforged.moddev'
+}
+
+base {
+    archivesName = "${mod_id}-neoforge-${minecraft_version}-${version}"
 }
 
 neoForge {
@@ -37,3 +41,12 @@ neoForge {
 }
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }
+sourceSets.main.resources.srcDir(project(':TreasureMarker').file('src/main/resources'))
+
+
+dependencies {
+    implementation project(':TreasureMarker')
+}
+
+sourceSets.main.java.srcDir(project(':TreasureMarker').file('src/main/java'))
+
