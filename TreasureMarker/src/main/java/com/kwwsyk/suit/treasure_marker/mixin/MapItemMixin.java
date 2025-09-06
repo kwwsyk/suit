@@ -1,6 +1,5 @@
 package com.kwwsyk.suit.treasure_marker.mixin;
 
-import com.kwwsyk.suit.treasure_marker.JMapMarker;
 import com.kwwsyk.suit.treasure_marker.TreasureMarker;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.world.InteractionHand;

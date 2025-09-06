@@ -42,15 +42,16 @@ public record WaypointData(String name, String dimension, Vec3 position, int col
         }
     }
 
-    public record WaypointKey(String dimension, Vec3 position){
+    public record WaypointKey(String dimension, double x, double z){
 
         public static final Codec<WaypointKey> CODEC = RecordCodecBuilder.create(instance->instance.group(
                 Codec.STRING.fieldOf("dimension").forGetter(WaypointKey::dimension),
-                Vec3.CODEC.fieldOf("position").forGetter(WaypointKey::position)
+                Codec.DOUBLE.fieldOf("x").forGetter(WaypointKey::x),
+                Codec.DOUBLE.fieldOf("z").forGetter(WaypointKey::z)
         ).apply(instance,WaypointKey::new));
 
         public WaypointKey(WaypointData data){
-            this(data.dimension, data.position);
+            this(data.dimension, data.position.x,data.position.z);
         }
     }
 }

@@ -1,0 +1,6 @@
+@ParametersAreNonnullByDefault@MethodsReturnNonnullByDefault
+package com.kwwsyk.suit.treasure_marker;
+
+import net.minecraft.MethodsReturnNonnullByDefault;
+
+import javax.annotation.ParametersAreNonnullByDefault;

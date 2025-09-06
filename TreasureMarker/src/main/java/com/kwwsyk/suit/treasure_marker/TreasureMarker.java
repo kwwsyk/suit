@@ -1,25 +1,31 @@
 package com.kwwsyk.suit.treasure_marker;
 
+import com.kwwsyk.suit.treasure_marker.config.IClientConfig;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
 public class TreasureMarker {
 
     static TreasureMarker INSTANCE = new TreasureMarker();
+    static IClientConfig clientConfig;
+
     private final Map<WaypointData.WaypointKey, WaypointData> marked_waypoints = new HashMap<>();
 
-    private MapMarker prior_marker = JMapMarker::JMapMark;
-    private String commandTemplate = JMapMarker.command;
+    private MapMarker prior_marker = MarkerUtil::stdMapMark;
+    private String defaultCommand = null;
 
-    private String defaultColor = "aqua";
+    public IClientConfig clientConfig(){
+        return clientConfig;
+    }
 
-    public com.kwwsyk.suit.treasure_marker.platform.services.IClientConfig clientConfig(){
-        return com.kwwsyk.suit.treasure_marker.platform.Services.load(com.kwwsyk.suit.treasure_marker.platform.services.IClientConfig.class);
+    public void setDefaultCommand(String command){
+        defaultCommand = command;
     }
 
     private TreasureMarker(){ }
@@ -43,14 +49,15 @@ public class TreasureMarker {
         marked_waypoints.clear();
     }
 
-    public String getCommandTemplate(){ return commandTemplate; }
-    public void setCommandTemplate(String template){ if(template!=null) this.commandTemplate = template; }
-
-    public String getDefaultColor(){ return defaultColor; }
-    public void setDefaultColor(String color){ if(color!=null) this.defaultColor = color; }
+    @Nullable
+    public String getWaypointCommand(){
+        return clientConfig.isForceCommand() ? clientConfig().getCommandTemplate() : defaultCommand;
+    }
 
     public MapMarker getPriorMarker(){ return prior_marker; }
-    public void setPriorMarker(MapMarker m){ if(m!=null) this.prior_marker = m; }
+    public void setPriorMarker(MapMarker m){
+        this.prior_marker = m;
+    }
 
     @FunctionalInterface
     public interface MapMarker{
