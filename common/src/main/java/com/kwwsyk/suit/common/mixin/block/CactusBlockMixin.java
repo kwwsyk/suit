@@ -26,7 +26,7 @@ public abstract class CactusBlockMixin implements BonemealableBlock, GrowableMul
     @Override
     public boolean canGrow(LevelReader level, BlockPos pos, BlockState state) {
         return calculateBlocks(level, pos, state) < getMaxGrowth()
-                && level.getBlockState(getTopPos(level, pos).above()).isAir()
+                && level.getBlockState(getTopPosAbove(level, pos)).isAir()
                 && canSurvive(state, level, pos.above());
     }
 

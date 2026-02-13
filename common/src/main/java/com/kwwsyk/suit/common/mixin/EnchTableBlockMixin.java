@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class EnchTableBlockMixin {
 
     @Inject(method = "isValidBookShelf", at = @At("HEAD"))
-    public static void suit$isValidBookShelf(Level level, BlockPos enchantingTablePos, BlockPos bookshelfPos, CallbackInfoReturnable<Boolean> cir){
+    private static void suit$isValidBookShelf(Level level, BlockPos enchantingTablePos, BlockPos bookshelfPos, CallbackInfoReturnable<Boolean> cir){
         if(true/*todo*/){
 
         }

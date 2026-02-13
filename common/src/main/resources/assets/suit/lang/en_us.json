@@ -1,0 +1,5 @@
+{
+  "commands.back.fail": "no last death point exist.",
+  "map.waypoint.coordinate": "Waypoint located in %s, ~, %s",
+  "mention.waypoint.dimension": "Ensure waypoint is in correct dimension!"
+}

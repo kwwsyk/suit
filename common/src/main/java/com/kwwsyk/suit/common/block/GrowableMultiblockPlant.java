@@ -26,14 +26,14 @@ public interface GrowableMultiblockPlant<B extends Block> {
     }
 
     default boolean canGrow(LevelReader level, BlockPos pos, BlockState state){
-        return calculateBlocks(level, pos, state) < getMaxGrowth() && level.getBlockState(getTopPos(level, pos).above()).isAir();
+        return calculateBlocks(level, pos, state) < getMaxGrowth() && level.getBlockState(getTopPosAbove(level, pos)).isAir();
     }
 
     default int getMaxGrowth(){
         return CANE_MAX_GROW_BLOCKS;
     }
 
-    default BlockPos getTopPos(LevelReader level, BlockPos pos){
+    default BlockPos getTopPosAbove(LevelReader level, BlockPos pos){
         int y = pos.getY();
         while(level.getBlockState(pos.atY(y)).is(self())){
             y++;
@@ -42,6 +42,6 @@ public interface GrowableMultiblockPlant<B extends Block> {
     }
 
     default void doGrow(ServerLevel level, BlockPos pos, BlockState state){
-        level.setBlock(getTopPos(level, pos).above(), self().defaultBlockState(), 3);
+        level.setBlock(getTopPosAbove(level, pos), self().defaultBlockState(), 3);
     }
 }

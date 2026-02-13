@@ -18,6 +18,7 @@ public final class EasierCraftingRecipes {
     ///  @see net.minecraft.data.recipes.RecipeBuilder
     ///  @see net.minecraft.data.recipes.RecipeProvider
 
+    //todo transfer to recipe datagen format like @EasyTemplateCraft
     public static final ShapedRecipe LADDER_FROM_PLANKS = new ShapedRecipe(
             "blocks",
             CraftingBookCategory.BUILDING,
@@ -57,4 +58,5 @@ public final class EasierCraftingRecipes {
             ),
             new ItemStack(Items.LADDER, 24)
     );
+    //todo craft repeater and comparator
 }

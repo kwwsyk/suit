@@ -1,8 +1,8 @@
 package com.kwwsyk.suit.common.options.config.json;
 
 import com.google.gson.*;
-import com.kwwsyk.endinv.common.options.config.ComplexConfigEntryImpl;
-import com.kwwsyk.endinv.common.options.config.ConfigEntryImpl;
+import com.kwwsyk.suit.common.options.config.ComplexConfigEntryImpl;
+import com.kwwsyk.suit.common.options.config.ConfigEntryImpl;
 import com.mojang.logging.LogUtils;
 import org.slf4j.Logger;
 
