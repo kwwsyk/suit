@@ -10,7 +10,22 @@ import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
+/**TreasureMarker helps to mark waypoints ({@code decorations}) of a map item in many different ways.
+ * <l>
+ *     1. To run waypoint commands of other mods, like {@code journeymap}.
+ *     2. Make a pointed compass to the waypoint. TODO
+ *     3. Let villagers do that. TODO
+ *     4. Send particles to.
+ *     5. Create a command tip to directly tp to.
+ *     ...
+ * </l>
+ * </p>
+ * TreasureMarker mod now is merged with {@code suit} mod, sharing mod injection points.
+ */
 public class TreasureMarker {
+
+    /// Navigates
+    /// @see
 
     static TreasureMarker INSTANCE = new TreasureMarker();
     static IClientConfig clientConfig;
@@ -61,6 +76,8 @@ public class TreasureMarker {
 
     @FunctionalInterface
     public interface MapMarker{
+        /// Usage
+        /// @see com.kwwsyk.suit.common.mixin.MapItemMixin
         void consume(Item mapItem, Level level, Player player, InteractionHand hand);
     }
 }

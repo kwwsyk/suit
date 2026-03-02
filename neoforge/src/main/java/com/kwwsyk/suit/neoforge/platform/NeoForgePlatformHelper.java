@@ -1,6 +1,6 @@
-package com.kwwsyk.suit.treasure_marker.neoforge.platform;
+package com.kwwsyk.suit.neoforge.platform;
 
-import com.kwwsyk.suit.treasure_marker.platform.services.IPlatformHelper;
+import com.kwwsyk.suit.common.platform.services.IPlatformHelper;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.loading.FMLLoader;
 

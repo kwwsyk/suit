@@ -1,4 +1,4 @@
-package com.kwwsyk.suit.treasure_marker.mixin;
+package com.kwwsyk.suit.common.mixin;
 
 import com.kwwsyk.suit.treasure_marker.TreasureMarker;
 import net.minecraft.MethodsReturnNonnullByDefault;
@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.Mixin;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
-@Mixin(MapItem.class)@ParametersAreNonnullByDefault@MethodsReturnNonnullByDefault
+@Mixin(MapItem.class)
 public abstract class MapItemMixin extends Item {
 
 

@@ -7,13 +7,14 @@
   "mixins": [
     "EnchantmentMenuMixin",
     "EnchTableBlockMixin",
+    "ExperienceOrbMixin",
     "ItemStackMixin",
+    "MapItemMixin",
     "block.CactusBlockMixin",
     "block.MossBlockMixin",
     "block.SugarCaneBlockMixin"
   ],
   "client": [
-
   ],
   "server": [],
   "injectors": {

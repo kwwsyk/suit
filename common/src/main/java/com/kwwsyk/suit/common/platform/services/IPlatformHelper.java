@@ -1,4 +1,4 @@
-package com.kwwsyk.suit.treasure_marker.platform.services;
+package com.kwwsyk.suit.common.platform.services;
 
 public interface IPlatformHelper {
 

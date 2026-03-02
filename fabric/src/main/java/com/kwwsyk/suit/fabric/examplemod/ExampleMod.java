@@ -1,5 +1,6 @@
 package com.kwwsyk.suit.fabric;
 
+import com.kwwsyk.suit.common.Constants;
 import net.fabricmc.api.ModInitializer;
 
 public class ExampleMod implements ModInitializer {
@@ -12,7 +13,7 @@ public class ExampleMod implements ModInitializer {
         // project.
 
         // Use Fabric to bootstrap the Common mod.
-        com.kwwsyk.suit.common.Constants.LOG.info("Hello Fabric world!");
+        Constants.LOG.info("Hello Fabric world!");
         com.kwwsyk.suit.common.CommonClass.init();
     }
 }

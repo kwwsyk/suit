@@ -17,6 +17,12 @@ public class DropsConfig extends ComplexConfigEntryImpl<DropsConfig.Param> {
         public static final Param DEFAULT = new Param(true,-1,false);
     }
 
+    /// Impl
+    /// see {@code neoforge.event.LootEvent}
+    /// @see com.kwwsyk.suit.neoforge.event.LootEvent
+
+
+    //impled by event, for both block and entity drops
     public final BooleanEntry PROTECT_DROPS =
             new BooleanEntry("protect_drops",
                     new String[]{"Give drops invulnerability from being destroyed by fire, explosion..."},
