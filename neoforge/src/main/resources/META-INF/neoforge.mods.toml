@@ -13,8 +13,8 @@ credits="${credits}" #optional
 authors = "${mod_author}" #optional
 description = '''${description}''' #mandatory (Supports multiline text)
 featureFlags="META-INF/feature_flags.json"
-#[[mixins]]
-#config = "${mod_id}.mixins.json"
+[[mixins]]
+config = "${mod_id}.mixins.json"
 [[mixins]]
 config = "${mod_id}.neoforge.mixins.json"
 [[dependencies.${mod_id}]] #optional

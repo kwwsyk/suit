@@ -1,7 +1,6 @@
 package com.kwwsyk.suit.common.mixin;
 
 import com.kwwsyk.suit.treasure_marker.TreasureMarker;
-import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
@@ -10,8 +9,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.MapItem;
 import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
-
-import javax.annotation.ParametersAreNonnullByDefault;
 
 @Mixin(MapItem.class)
 public abstract class MapItemMixin extends Item {

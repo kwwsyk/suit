@@ -12,7 +12,7 @@ import java.util.Optional;
 
 public final class BackToDeathPointCommand {
 
-    public BackToDeathPointCommand(){}
+    private BackToDeathPointCommand(){}
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher){
         dispatcher.register(Commands.literal("back")
@@ -46,9 +46,5 @@ public final class BackToDeathPointCommand {
         }
         return 1;
     }
-
-
-
-
 }
 
