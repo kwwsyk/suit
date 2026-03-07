@@ -8,6 +8,7 @@ import java.util.Locale;
 
 public enum SuitFeatureDefinitions {
 
+    //MINING,
     EASIER_CRAFTING,
     CHEAPER_CRAFTING,
     EXTENDED_CRAFTING,

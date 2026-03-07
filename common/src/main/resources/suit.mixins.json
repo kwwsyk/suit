@@ -5,9 +5,11 @@
   "refmap": "${mod_id}.refmap.json",
   "compatibilityLevel": "JAVA_18",
   "mixins": [
+    "AnvilMenuMixin",
     "EnchantmentMenuMixin",
     "EnchTableBlockMixin",
     "ExperienceOrbMixin",
+    "ItemCombinerMenuMixin",
     "ItemStackMixin",
     "MapItemMixin",
     "block.CactusBlockMixin",

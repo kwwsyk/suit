@@ -18,4 +18,6 @@ public class ModInitializer {
             container.registerConfig(ModConfig.Type.CLIENT, ClientConfig.init());
         }
     }
+
+    /// @see net.neoforged.neoforge.registries.DeferredRegister
 }
