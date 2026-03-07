@@ -1,5 +1,6 @@
 package com.kwwsyk.suit.common.mixin;
 
+import com.kwwsyk.suit.common.ench.conflict_solution.AnvilEnchantConflictSession;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
@@ -30,6 +31,9 @@ public abstract class AnvilMenuMixin extends ItemCombinerMenuMixin{
     @Unique
     private final DataSlot suit$costXp = DataSlot.standalone();
 
+    @Unique
+    private final AnvilEnchantConflictSession suit$conflictSession = new AnvilEnchantConflictSession();
+
     @Final
     @Shadow
     private DataSlot cost;
@@ -49,6 +53,7 @@ public abstract class AnvilMenuMixin extends ItemCombinerMenuMixin{
     )
     public void suit$rebuildAnvilMechanic(CallbackInfo ci) {
         if(false) return;
+        this.suit$conflictSession.begin();
         ItemStack base = this.inputSlots.getItem(0);
         this.cost.set(1);
         this.suit$costXp.set(0);//additional xp cost
@@ -118,9 +123,17 @@ public abstract class AnvilMenuMixin extends ItemCombinerMenuMixin{
                         }
 
                         for (Holder<Enchantment> holder1 : resultEnch.keySet()) {
-                            if (!holder1.equals(holder) && !Enchantment.areCompatible(holder, holder1)) {//todo resolve confliction
-                                noConflict = false;
-                                //repairCost++; Suit change: remove punishment
+                            if (!holder1.equals(holder) && !Enchantment.areCompatible(holder, holder1)) {
+                                boolean suit$allowConflict = this.suit$conflictSession.allowVanillaConflict(
+                                        holder,
+                                        addLevel,
+                                        holder1,
+                                        resultEnch.getLevel(holder1),
+                                        enchBookFlag
+                                );
+                                if (!suit$allowConflict) {
+                                    noConflict = false;
+                                }
                             }
                         }
 
@@ -164,7 +177,10 @@ public abstract class AnvilMenuMixin extends ItemCombinerMenuMixin{
                 result.remove(DataComponents.CUSTOM_NAME);
             }
 
-            this.cost.set((int) Mth.clamp(basicCost + (long)repairCost, 0L, 2147483647L));//inlined local var
+            AnvilEnchantConflictSession.FinalizationResult suit$finalized = this.suit$conflictSession.finalizeEnchantments(resultEnch.toImmutable());
+            repairCost += suit$finalized.xpDelta();
+
+            this.cost.set((int) Mth.clamp(basicCost + (long) repairCost, 0L, 2147483647L));//inlined local var
             this.suit$costXp.set(suit$repairXpCost);
 //            if (repairCost <= 0) {
 //                result = ItemStack.EMPTY;
@@ -189,7 +205,7 @@ public abstract class AnvilMenuMixin extends ItemCombinerMenuMixin{
                 }
 
                 result.set(DataComponents.REPAIR_COST, repairCostData);
-                EnchantmentHelper.setEnchantments(result, resultEnch.toImmutable());
+                EnchantmentHelper.setEnchantments(result, new ItemEnchantments(suit$finalized.enchantments()));
             }
 
             this.resultSlots.setItem(0, result);
