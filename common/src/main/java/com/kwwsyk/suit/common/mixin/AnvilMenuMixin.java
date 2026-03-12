@@ -1,8 +1,6 @@
 package com.kwwsyk.suit.common.mixin;
 
-import com.kwwsyk.suit.common.ench.conflict_solution.AnvilEnchantConflictSession;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import net.minecraft.core.Holder;
+import com.kwwsyk.suit.common.ench.merge_solution.EnchUtilBridge;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -12,8 +10,6 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.AnvilMenu;
 import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import org.spongepowered.asm.mixin.Final;
@@ -30,9 +26,6 @@ public abstract class AnvilMenuMixin extends ItemCombinerMenuMixin{
 
     @Unique
     private final DataSlot suit$costXp = DataSlot.standalone();
-
-    @Unique
-    private final AnvilEnchantConflictSession suit$conflictSession = new AnvilEnchantConflictSession();
 
     @Final
     @Shadow
@@ -53,7 +46,6 @@ public abstract class AnvilMenuMixin extends ItemCombinerMenuMixin{
     )
     public void suit$rebuildAnvilMechanic(CallbackInfo ci) {
         if(false) return;
-        this.suit$conflictSession.begin();
         ItemStack base = this.inputSlots.getItem(0);
         this.cost.set(1);
         this.suit$costXp.set(0);//additional xp cost
@@ -107,58 +99,12 @@ public abstract class AnvilMenuMixin extends ItemCombinerMenuMixin{
                         }
                     }
 
-                    ItemEnchantments itemenchantments = EnchantmentHelper.getEnchantmentsForCrafting(addition);
-                    boolean hasEnchApplied = false;
-                    boolean hasConflict = false;
+                    EnchUtilBridge.AnvilMergeResult mergeEnchantResult = EnchUtilBridge.anvil$mergeEnchantments(addition, resultEnch, base, enchBookFlag, this.player);
 
-                    for (Object2IntMap.Entry<Holder<Enchantment>> entry : itemenchantments.entrySet()) {
-                        Holder<Enchantment> holder = entry.getKey();
-                        int baseLevel = resultEnch.getLevel(holder);
-                        int addLevel = entry.getIntValue();
-                        addLevel = baseLevel == addLevel ? addLevel + 1 : Math.max(addLevel, baseLevel);
-                        Enchantment enchantment = holder.value();
-                        boolean noConflict = enchantment.canEnchant(base);
-                        if (this.player.getAbilities().instabuild || base.is(Items.ENCHANTED_BOOK)) {
-                            noConflict = true;
-                        }
+                    repairCost += mergeEnchantResult.lvlCost();
+                    suit$repairXpCost += mergeEnchantResult.xpCost();
 
-                        for (Holder<Enchantment> holder1 : resultEnch.keySet()) {
-                            if (!holder1.equals(holder) && !Enchantment.areCompatible(holder, holder1)) {
-                                boolean suit$allowConflict = this.suit$conflictSession.allowVanillaConflict(
-                                        holder,
-                                        addLevel,
-                                        holder1,
-                                        resultEnch.getLevel(holder1),
-                                        enchBookFlag
-                                );
-                                if (!suit$allowConflict) {
-                                    noConflict = false;
-                                }
-                            }
-                        }
-
-                        if (!noConflict) {
-                            hasConflict = true;
-                        } else {
-                            hasEnchApplied = true;
-                            if (addLevel > enchantment.getMaxLevel()) {
-                                addLevel = enchantment.getMaxLevel();
-                            }
-
-                            resultEnch.set(holder, addLevel);
-                            int enchCost = enchantment.getAnvilCost();
-                            if (enchBookFlag) {
-                                enchCost = Math.max(1, enchCost / 2);
-                            }
-
-                            repairCost += enchCost * (addLevel - baseLevel);//Suit change: multiply cost by increased levels
-//                            if (base.getCount() > 1) {
-//                                repairCost = 40;
-//                            } Suit change: maybe you can ench dirt now!
-                        }
-                    }
-
-                    if (hasConflict && !hasEnchApplied) {
+                    if (mergeEnchantResult.hasConflict() && !mergeEnchantResult.hasEnchApplied()) {
                         suit$clearResults();
                         return;
                     }
@@ -177,10 +123,7 @@ public abstract class AnvilMenuMixin extends ItemCombinerMenuMixin{
                 result.remove(DataComponents.CUSTOM_NAME);
             }
 
-            AnvilEnchantConflictSession.FinalizationResult suit$finalized = this.suit$conflictSession.finalizeEnchantments(resultEnch.toImmutable());
-            repairCost += suit$finalized.xpDelta();
-
-            this.cost.set((int) Mth.clamp(basicCost + (long) repairCost, 0L, 2147483647L));//inlined local var
+            this.cost.set((int) Mth.clamp(basicCost + (long)repairCost, 0L, 2147483647L));//inlined local var
             this.suit$costXp.set(suit$repairXpCost);
 //            if (repairCost <= 0) {
 //                result = ItemStack.EMPTY;
@@ -205,7 +148,7 @@ public abstract class AnvilMenuMixin extends ItemCombinerMenuMixin{
                 }
 
                 result.set(DataComponents.REPAIR_COST, repairCostData);
-                EnchantmentHelper.setEnchantments(result, new ItemEnchantments(suit$finalized.enchantments()));
+                EnchantmentHelper.setEnchantments(result, resultEnch.toImmutable());
             }
 
             this.resultSlots.setItem(0, result);
@@ -215,6 +158,7 @@ public abstract class AnvilMenuMixin extends ItemCombinerMenuMixin{
         }
         ci.cancel();
     }
+
     @Unique
     private void suit$clearResults() {
         this.resultSlots.setItem(0, ItemStack.EMPTY);

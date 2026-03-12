@@ -1,6 +1,5 @@
-package com.kwwsyk.suit.common.ench;
+package com.kwwsyk.suit.common.ench.merge_solution;
 
-import com.kwwsyk.suit.common.ench.merge_solution.EnchUtilBridge;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import net.minecraft.core.Holder;
 import net.minecraft.world.entity.player.Player;
@@ -10,21 +9,11 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 
-public class EnchUtil {
-
-    public static int transformLevelToXpCost(int level){
-        if (level < 0) return -transformLevelToXpCost(-level);
-
-        if (level < 15) {
-            return level * level + 6 * level;
-        } else if (level < 30) {
-            return (5 * level * level - 43 * level) / 2 + 1080;
-        } else {
-            return (9 * level * level - 325 * level) / 2 + 5510;
-        }
+public final class EnchUtilBridge {
+    private EnchUtilBridge() {
     }
 
-    public static EnchUtilBridge.AnvilMergeResult anvil$mergeEnchantments(ItemStack addition, ItemEnchantments.Mutable resultEnch, ItemStack base, boolean enchBookFlag, Player currentPlayer){
+    public static AnvilMergeResult anvil$mergeEnchantments(ItemStack addition, ItemEnchantments.Mutable resultEnch, ItemStack base, boolean enchBookFlag, Player currentPlayer) {
         ItemEnchantments itemenchantments = EnchantmentHelper.getEnchantmentsForCrafting(addition);
         boolean hasEnchApplied = false;
         boolean hasConflict = false;
@@ -73,6 +62,9 @@ public class EnchUtil {
 //                            } Suit change: maybe you can ench dirt now!
             }
         }
-        return new EnchUtilBridge.AnvilMergeResult(hasEnchApplied, hasConflict, xpCost, lvlCost);
+        return new AnvilMergeResult(hasEnchApplied, hasConflict, xpCost, lvlCost);
+    }
+
+    public record AnvilMergeResult(boolean hasEnchApplied, boolean hasConflict, int xpCost, int lvlCost) {
     }
 }
