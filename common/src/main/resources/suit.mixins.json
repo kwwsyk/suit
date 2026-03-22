@@ -17,6 +17,8 @@
     "block.SugarCaneBlockMixin"
   ],
   "client": [
+    "client.ACSMixin",
+    "client.AnvilScreenMixin",
     "client.FogWiper",
     "client.GuiMixin"
   ],

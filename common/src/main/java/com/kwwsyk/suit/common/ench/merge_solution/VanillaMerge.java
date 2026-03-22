@@ -1,40 +1,42 @@
 package com.kwwsyk.suit.common.ench.merge_solution;
 
+import com.kwwsyk.suit.common.ench.EnchMergeChannel;
 import com.kwwsyk.suit.common.ench.EnchMergeContext;
 import com.kwwsyk.suit.common.ench.EnchUtil;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.core.Holder;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 
 import java.util.Collection;
 import java.util.Map;
 
-public class VanillaMerge implements EnchMergeSolution{
+public class VanillaMerge extends AbstractMergeSolution{
 
-    Collection<Holder<Enchantment>> enchSet;
-    public boolean keepConflictionPunishment = false;
+    public final boolean keepConflictionPunishment;
 
-    @Override
-    public boolean accept(Holder<Enchantment> ench, EnchMergeContext context) {
-        return enchSet != null && enchSet.contains(ench);
+    protected VanillaMerge(Collection<ResourceKey<Enchantment>> enchSet, Collection<TagKey<Enchantment>> tagSet, boolean keepConflictionPunishment) {
+        super(enchSet, tagSet);
+        this.keepConflictionPunishment = keepConflictionPunishment;
     }
 
     @Override
-    public MergeResult merge(Map<Holder<Enchantment>, Integer> base, Map<Holder<Enchantment>, Integer> addi, EnchMergeContext context) {
+    public MergeResult merge(EnchMergeChannel.ChannelMergeProcess mergeProcess, Object2IntOpenHashMap<Holder<Enchantment>> base, Object2IntOpenHashMap<Holder<Enchantment>> addi, EnchMergeContext context) {
         Object2IntOpenHashMap<Holder<Enchantment>> result = new Object2IntOpenHashMap<>(base);
         boolean hasEnchApplied = false;
-        boolean hasConflict = false;
         int xpCost = 0;
         int lvlCost = 0;
 
-        for (Map.Entry<Holder<Enchantment>, Integer> entry : addi.entrySet()) {
+        for (Map.Entry<Holder<Enchantment>, Integer> entry : addi.object2IntEntrySet()) {
             Holder<Enchantment> holder = entry.getKey();
-            int baseLevel = base.get(holder);
+            int baseLevel = base.getInt(holder);
             int addLevel = entry.getValue();
             addLevel = baseLevel == addLevel ? addLevel + 1 : Math.max(addLevel, baseLevel);
             Enchantment enchantment = holder.value();
             boolean noConflict = enchantment.canEnchant(context.getBaseItem());
-            if (context.isCreative() || context.applyingEnchBook()) {
+            if (context.isCreative() || context.getBaseItem().is(Items.ENCHANTED_BOOK)) {
                 noConflict = true;
             }
 
@@ -45,9 +47,7 @@ public class VanillaMerge implements EnchMergeSolution{
                 }
             }
 
-            if (!noConflict) {
-                hasConflict = true;
-            } else {
+            if (noConflict) {
                 hasEnchApplied = true;
                 if (addLevel > enchantment.getMaxLevel()) {
                     addLevel = enchantment.getMaxLevel();
@@ -60,38 +60,9 @@ public class VanillaMerge implements EnchMergeSolution{
                 }
 
                 lvlCost += enchCost * (addLevel - baseLevel);
-                xpCost ++;
             }
         }
-        return new Merged(result, EnchUtil.transformLevelToXpCost(lvlCost) + xpCost, !hasConflict || hasEnchApplied);
+        return new Merged(result, EnchUtil.transformLevelToXpCost(lvlCost) + xpCost, hasEnchApplied);
     }
 
-    public static class DefaultMerge extends VanillaMerge{
-
-        public static DefaultMerge INSTANCE;
-
-        public DefaultMerge(){
-            super();
-            if(INSTANCE == null){
-                INSTANCE = this;
-            }else {}//log
-        }
-
-        @Override
-        public boolean accept(Holder<Enchantment> ench, EnchMergeContext context) {
-            if(enchSet == null){
-                //lazy initialized
-                //collect all unresolved ench by other registered solutions
-                return false;
-            }
-            return enchSet.contains(ench);
-        }
-    }
-
-    public static class Builder {
-
-        private Builder(){
-
-        }
-    }
 }

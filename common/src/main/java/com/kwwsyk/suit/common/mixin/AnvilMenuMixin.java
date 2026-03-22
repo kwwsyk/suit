@@ -1,6 +1,12 @@
 package com.kwwsyk.suit.common.mixin;
 
+import com.google.common.base.Predicates;
+import com.kwwsyk.suit.common.ench.EnchMerger;
+import com.kwwsyk.suit.common.ench.EnchUtil;
 import com.kwwsyk.suit.common.ench.merge_solution.EnchUtilBridge;
+import com.kwwsyk.suit.common.ench.merge_solution.MergeResult;
+import com.kwwsyk.suit.common.options.ServerConfigs;
+import com.kwwsyk.suit.common.util.IAnvilMenuExtension;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -22,7 +28,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(AnvilMenu.class)
-public abstract class AnvilMenuMixin extends ItemCombinerMenuMixin{
+public abstract class AnvilMenuMixin extends ItemCombinerMenuMixin implements IAnvilMenuExtension {
 
     @Unique
     private final DataSlot suit$costXp = DataSlot.standalone();
@@ -37,6 +43,11 @@ public abstract class AnvilMenuMixin extends ItemCombinerMenuMixin{
     @Shadow
     private String itemName;
 
+    @Override
+    public int getXpCost() {
+        return suit$costXp.get();
+    }
+
     @Inject(
             method = "createResult()V",
             at = @At(
@@ -45,14 +56,14 @@ public abstract class AnvilMenuMixin extends ItemCombinerMenuMixin{
             cancellable = true
     )
     public void suit$rebuildAnvilMechanic(CallbackInfo ci) {
-        if(false) return;
+        if(!ServerConfigs.DEBUG_ANVIL_ENCH_MERGE.get()) return;
         ItemStack base = this.inputSlots.getItem(0);
         this.cost.set(1);
         this.suit$costXp.set(0);//additional xp cost
         int repairCost = 0;
         int suit$repairXpCost = 0;
         long basicCost = 0L;
-        //int renameCost = 0; Suit change: remove rename cost
+        int renameCost = 0; //Suit change: remove rename cost  Keep it to check
         if (!base.isEmpty() && EnchantmentHelper.canStoreEnchantments(base)) {
             ItemStack result = base.copy();
             ItemStack addition = this.inputSlots.getItem(1);
@@ -66,6 +77,7 @@ public abstract class AnvilMenuMixin extends ItemCombinerMenuMixin{
                     int repairAmount = Math.min(result.getDamageValue(), result.getMaxDamage() / 4);
                     if (repairAmount <= 0) {
                         suit$clearResults();
+                        ci.cancel();
                         return;
                     }
 
@@ -81,6 +93,7 @@ public abstract class AnvilMenuMixin extends ItemCombinerMenuMixin{
                 } else {
                     if (!enchBookFlag && (!result.is(addition.getItem()) || !result.isDamageableItem())) {
                         suit$clearResults();
+                        ci.cancel();
                         return;
                     }
 
@@ -99,13 +112,17 @@ public abstract class AnvilMenuMixin extends ItemCombinerMenuMixin{
                         }
                     }
 
-                    EnchUtilBridge.AnvilMergeResult mergeEnchantResult = EnchUtilBridge.anvil$mergeEnchantments(addition, resultEnch, base, enchBookFlag, this.player);
+                    MergeResult mergeResult = EnchMerger.anvilMergeEnchantments(base, addition, enchBookFlag, player);
 
-                    repairCost += mergeEnchantResult.lvlCost();
-                    suit$repairXpCost += mergeEnchantResult.xpCost();
+                    resultEnch.removeIf(Predicates.alwaysTrue());//remove all enchantments
+                    mergeResult.enchantments().forEach(resultEnch::set);
+                    EnchantmentHelper.setEnchantments(result, resultEnch.toImmutable());
 
-                    if (mergeEnchantResult.hasConflict() && !mergeEnchantResult.hasEnchApplied()) {
+                    suit$repairXpCost += mergeResult.xpCost();
+
+                    if (!mergeResult.anyMerged()) {
                         suit$clearResults();
+                        ci.cancel();
                         return;
                     }
                 }
@@ -113,24 +130,26 @@ public abstract class AnvilMenuMixin extends ItemCombinerMenuMixin{
 
             if (this.itemName != null && !StringUtil.isBlank(this.itemName)) {
                 if (!this.itemName.equals(base.getHoverName().getString())) {
-                    //renameCost = 1;
+                    renameCost = 1;
                     //repairCost += renameCost; Suit change: remove rename cost
                     result.set(DataComponents.CUSTOM_NAME, Component.literal(this.itemName));
                 }
             } else if (base.has(DataComponents.CUSTOM_NAME)) {
-                //renameCost = 1;
+                renameCost = 1;
                 //repairCost += renameCost; Suit change: remove rename cost
                 result.remove(DataComponents.CUSTOM_NAME);
             }
 
-            this.cost.set((int) Mth.clamp(basicCost + (long)repairCost, 0L, 2147483647L));//inlined local var
-            this.suit$costXp.set(suit$repairXpCost);
+            this.cost.set(repairCost);//inlined local var
+            this.suit$costXp.set(suit$repairXpCost + EnchUtil.transformLevelToXpCost((int) Mth.clamp(basicCost + (long)repairCost, 0L, 2147483647L)));
 //            if (repairCost <= 0) {
 //                result = ItemStack.EMPTY;
 //            } Now receive negative repair cost value
 
-            if (repairCost == 0 && suit$repairXpCost == 0) {
-                this.cost.set(0);//suit change: remove rename cost totally, avoid basic repair cost
+            if (renameCost == 0 && suit$repairXpCost == 0) {
+                suit$clearResults();
+                ci.cancel();
+                return;
             }
 
             /*if (this.cost.get() >= 40 && !this.player.getAbilities().instabuild) {
@@ -179,6 +198,7 @@ public abstract class AnvilMenuMixin extends ItemCombinerMenuMixin{
             require = 0
     )
     public void sui$chargeOptimalLevels(Player player, int level) {
-
+        player.giveExperienceLevels(EnchUtil.transformLevelToXpCost(level));
+        player.giveExperienceLevels(-this.suit$costXp.get());
     }
 }
