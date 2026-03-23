@@ -9,6 +9,7 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.Set;
 
 public class SolutionBuilder {
 
@@ -41,8 +42,13 @@ public class SolutionBuilder {
         tagSet.add(enchantmentTagKey);
     }
 
-    public VanillaMerge ofVanilla() {
-        return new VanillaMerge(enchSet, tagSet, false);
+    public static VanillaMerge vanillaRuleForRemain() {
+        return new VanillaMerge(Set.of(), Set.of(), false){
+            @Override
+            public boolean accept(Holder<Enchantment> ench, EnchMergeContext context) {
+                return true;
+            }
+        };
     }
 
     public ResolveWithConditionAndCost ofMultipliedLevelBasedExtraCost(float costMultiplier) {

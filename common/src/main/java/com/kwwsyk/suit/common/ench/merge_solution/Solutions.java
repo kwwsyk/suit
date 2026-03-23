@@ -1,9 +1,6 @@
 package com.kwwsyk.suit.common.ench.merge_solution;
 
-import com.kwwsyk.suit.common.ench.EnchMergeContext;
-import net.minecraft.core.Holder;
 import net.minecraft.tags.EnchantmentTags;
-import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.Enchantments;
 
 import java.util.ArrayList;
@@ -29,9 +26,7 @@ public class Solutions {//todo this is a data based
             .of(EnchantmentTags.DAMAGE_EXCLUSIVE)
             .ofAtkOrDefEnchSolution(Enchantments.SHARPNESS, 5, 16);
 
-    public static final EnchMergeSolution VANILLA_SOLUTION = SolutionBuilder
-            .of(EnchantmentTags.NON_TREASURE)
-            .ofVanilla();
+    public static final EnchMergeSolution VANILLA_SOLUTION = SolutionBuilder.vanillaRuleForRemain();
 
     static {
         SUIT_SOLUTIONS.add(BOW_SOLUTION);

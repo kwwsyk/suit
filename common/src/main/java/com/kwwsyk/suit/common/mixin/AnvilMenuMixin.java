@@ -3,7 +3,6 @@ package com.kwwsyk.suit.common.mixin;
 import com.google.common.base.Predicates;
 import com.kwwsyk.suit.common.ench.EnchMerger;
 import com.kwwsyk.suit.common.ench.EnchUtil;
-import com.kwwsyk.suit.common.ench.merge_solution.EnchUtilBridge;
 import com.kwwsyk.suit.common.ench.merge_solution.MergeResult;
 import com.kwwsyk.suit.common.options.ServerConfigs;
 import com.kwwsyk.suit.common.util.IAnvilMenuExtension;
@@ -26,6 +25,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(AnvilMenu.class)
 public abstract class AnvilMenuMixin extends ItemCombinerMenuMixin implements IAnvilMenuExtension {
@@ -187,6 +187,18 @@ public abstract class AnvilMenuMixin extends ItemCombinerMenuMixin implements IA
     @Unique
     private static int suit$modified_calculateIncreasedRepairCost(int oldRepairCost){
         return Math.min(oldRepairCost + 1, 39);
+    }
+
+    @Inject(
+            method = "mayPickup",
+            at = @At("HEAD"),
+            cancellable = true
+    )
+    public void suit$mayPickup(Player player, boolean hasStack, CallbackInfoReturnable<Boolean> cir){
+        cir.setReturnValue(
+                (player.hasInfiniteMaterials() || EnchUtil.transformLevelToXpCost(player.experienceLevel) >= this.suit$costXp.get()) && this.suit$costXp.get() > 0
+        );
+        cir.cancel();
     }
 
     @Redirect(

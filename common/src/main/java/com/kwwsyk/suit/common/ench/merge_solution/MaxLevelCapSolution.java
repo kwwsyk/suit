@@ -2,7 +2,6 @@ package com.kwwsyk.suit.common.ench.merge_solution;
 
 import com.kwwsyk.suit.common.ench.EnchMergeChannel;
 import com.kwwsyk.suit.common.ench.EnchMergeContext;
-import com.kwwsyk.suit.common.ench.EnchUtil;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceKey;
@@ -12,6 +11,10 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import java.util.Collection;
 import java.util.Map;
 
+/**
+ * If an {@link EnchMergeChannel) } uses this solution,
+ *  all enchantments have a shared max total level sum and max quadratic level sum.
+ */
 public abstract class MaxLevelCapSolution extends AbstractMergeSolution{
 
     protected final int maxTotalLevel;
@@ -21,21 +24,6 @@ public abstract class MaxLevelCapSolution extends AbstractMergeSolution{
         super(enchSet, enchTags);
         this.maxTotalLevel = maxTotalLevel;
         this.maxQuadraticLevelSum = maxQuadraticLevelSum;
-    }
-
-    protected static int getCost(EnchMergeContext context, Holder<Enchantment> holder, int resultLevel, int baseLevel) {
-        if(resultLevel <= baseLevel) return 0;
-
-        int enchCost = holder.value().getAnvilCost();
-        if (context.applyingEnchBook()) {
-            enchCost = Math.max(1, enchCost / 2);
-        }
-
-        return enchCost * (resultLevel - baseLevel);
-    }
-
-    protected static int updateQuadraticLevelSum(Object2IntOpenHashMap<Holder<Enchantment>> result, int resultLevel, int baseLevel) {
-        return MaxLevelCapSolution.getQuadraticLevelSum(result) + resultLevel * resultLevel - baseLevel * baseLevel;
     }
 
     protected static int getTotalEnhancementLevel(Map<Holder<Enchantment>, Integer> base) {
@@ -54,59 +42,122 @@ public abstract class MaxLevelCapSolution extends AbstractMergeSolution{
         return sum;
     }
 
+    /**
+     * If the max quadratic level sum is greater than the max total level squared,
+     * then the quadratic level sum can be ignored.</br>
+     * Based on the math regulation that the quadratic level sum is always less or equal than the total level squared.
+     */
+    protected boolean canIgnoreQuadraticLevelSum(){
+        return maxQuadraticLevelSum >= maxTotalLevel * maxTotalLevel;
+    }
 
     @Override
     public MergeResult merge(EnchMergeChannel.ChannelMergeProcess mergeProcess, Object2IntOpenHashMap<Holder<Enchantment>> base, Object2IntOpenHashMap<Holder<Enchantment>> addi, EnchMergeContext context) {
-        Object2IntOpenHashMap<Holder<Enchantment>> result = new Object2IntOpenHashMap<>(base);
+        LevelCapMergeProcess process = new LevelCapMergeProcess(mergeProcess, base, addi);
 
-        int leftAdvEnchTotalLvl = getTotalEnhancementLevel(result);
-        int quadraticLevelSum = getQuadraticLevelSum(result);
-
-        if(leftAdvEnchTotalLvl >= maxTotalLevel || quadraticLevelSum >= maxQuadraticLevelSum){
-            return new Merged(new Object2IntOpenHashMap<>(base), 0, false);
+        if(process.reachedLevelCap()){
+            return process;
         }
 
-        boolean hasEnchApplied = false;
-        int xpCost = 0;
-        int lvlCost = 0;
-        //todo add item can ench check
-        for(Map.Entry<Holder<Enchantment>, Integer> entry : result.object2IntEntrySet()){
+        //todo add confliction info
+        for(Map.Entry<Holder<Enchantment>, Integer> entry : base.object2IntEntrySet()){
             Holder<Enchantment> holder = entry.getKey();
             int baseLevel = entry.getValue();
-            int addLevel = addi.getInt(holder);
+            int addLevel = process.addiEnch.getInt(holder);
             if(addLevel == 0) continue;
-            int maxLevel = baseLevel == addLevel ? baseLevel + 1 : Math.max(addLevel, baseLevel);
-            maxLevel = Math.min(maxLevel, holder.value().getMaxLevel());
-            //restrict the level to avoid exceeding maxTotalLevel & maxQuadraticLevelSum
-            int resultLevel = baseLevel;
-            while(resultLevel < maxLevel){
-                if(getTotalEnhancementLevel(result)+1 > maxTotalLevel || updateQuadraticLevelSum(result, resultLevel + 1, baseLevel) > maxQuadraticLevelSum){
-                    break;
-                }
-                resultLevel ++;
-            }
-            result.put(holder, resultLevel);
-            hasEnchApplied = true;
-            lvlCost += getCost(context, holder, resultLevel, baseLevel);
-            addi.removeInt(holder);
-        }
-        for(Map.Entry<Holder<Enchantment>, Integer> entry : addi.object2IntEntrySet()){
-            Holder<Enchantment> holder = entry.getKey();
-            int addLevel = entry.getValue();
-            addLevel = Math.min(addLevel, holder.value().getMaxLevel());
-            int resultLevel = 0;
-            while(resultLevel < addLevel){
-                if(getTotalEnhancementLevel(result)+1 > maxTotalLevel || updateQuadraticLevelSum(result, resultLevel + 1, 0) > maxQuadraticLevelSum){
-                    break;
-                }
-                resultLevel ++;
-            }
-            result.put(holder, resultLevel);
-            hasEnchApplied = true;
 
-            lvlCost += getCost(context, holder, resultLevel, 0);
+            process.applyMergedEnchantment(holder, baseLevel, addLevel, context);
+
+            process.addiEnch.removeInt(holder);
+        }
+        for(Map.Entry<Holder<Enchantment>, Integer> entry : process.addiEnch.object2IntEntrySet()){
+            Holder<Enchantment> addiHolder = entry.getKey();
+
+            if (vanilla_rule$itemCanEnchant(addiHolder.value(), context)) {
+                process.hasConflictEnch = true;
+                process.hasConflictionResolved = true;//assert
+                process.applyMergedEnchantment(addiHolder, 0, entry.getValue(), context);
+            }
         }
 
-        return new Merged(result, EnchUtil.transformLevelToXpCost(lvlCost) + xpCost, hasEnchApplied);
+        return process;
     }
+
+    public class LevelCapMergeProcess extends EnchMergeChannel.ChannelMergeProcess{
+
+        public final Object2IntOpenHashMap<Holder<Enchantment>> addiEnch;
+
+        private int totalLevel;
+        private int quadraticLevelSum;
+
+        public LevelCapMergeProcess(
+                EnchMergeChannel.ChannelMergeProcess mergeProcess,
+                Object2IntOpenHashMap<Holder<Enchantment>> baseEnch,
+                Object2IntOpenHashMap<Holder<Enchantment>> addiEnch
+        ) {
+            super(mergeProcess.channel, baseEnch);
+            this.xpCost = mergeProcess.xpCost;
+            this.lvlCost = mergeProcess.lvlCost;
+            this.hasAnyEnchApplied = mergeProcess.hasAnyEnchApplied;
+            this.hasConflictEnch = mergeProcess.hasConflictEnch;
+            this.hasConflictionResolved = mergeProcess.hasConflictionResolved;
+
+            this.addiEnch = addiEnch;
+
+            this.totalLevel = getTotalEnhancementLevel(resultEnch);
+            this.quadraticLevelSum = getQuadraticLevelSum(resultEnch);
+        }
+
+        protected boolean reachedLevelCap() {
+            return totalLevel >= maxTotalLevel || quadraticLevelSum >= maxQuadraticLevelSum;
+        }
+
+        /**
+         * Keep Atomic in method: {@link #resultEnch} {@link #totalLevel} {@link #quadraticLevelSum}
+         */
+        private int growLevelWithinCap(
+                Holder<Enchantment> holder,
+                int startLevel,
+                int targetLevel
+        ) {
+            int resultLevel = startLevel;
+            int total = totalLevel;
+            int quadratic = quadraticLevelSum;
+
+            while (resultLevel < targetLevel) {
+                int nextLevel = resultLevel + 1;
+                int nextTotal = total + 1;
+                int nextQuadratic = quadratic - resultLevel * resultLevel + nextLevel * nextLevel;
+
+                if (nextTotal > maxTotalLevel || nextQuadratic > maxQuadraticLevelSum) {
+                    break;
+                }
+
+                resultLevel = nextLevel;
+                total = nextTotal;
+                quadratic = nextQuadratic;
+            }
+
+            totalLevel = total;
+            quadraticLevelSum = quadratic;
+            resultEnch.put(holder, resultLevel);
+            hasAnyEnchApplied = true;
+            return resultLevel;
+        }
+
+        protected void applyMergedEnchantment(
+                Holder<Enchantment> holder, int oldLevel, int incomingLevel, EnchMergeContext context
+        ) {
+            if (incomingLevel <= 0) {
+                return;
+            }
+
+            int maxLevel = vanilla_rule$getMergedLevel(holder, oldLevel, incomingLevel);
+
+            int resultLevel = growLevelWithinCap(holder, oldLevel, maxLevel);
+
+            lvlCost += vanilla_like_rule$getCost(holder, oldLevel, resultLevel, context);
+        }
+    }
+
 }

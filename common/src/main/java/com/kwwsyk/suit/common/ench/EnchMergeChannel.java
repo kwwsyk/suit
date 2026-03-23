@@ -5,6 +5,7 @@ import com.kwwsyk.suit.common.ench.merge_solution.MergeResult;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.core.Holder;
 import net.minecraft.world.item.enchantment.Enchantment;
+import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.Map;
 
@@ -55,26 +56,43 @@ public class EnchMergeChannel implements IEnchMergeChannel {
     public static class ChannelMergeProcess implements MergeResult{
 
         public final EnchMergeChannel channel;
-        private final Object2IntOpenHashMap<Holder<Enchantment>> resultEnch;
-        boolean isFinal = false;
-        int xpCost = 0;
-        boolean hasConflictEnch = false;
-        boolean hasConflictionResolved = false;
-        boolean hasAnyEnchApplied = false;
+
+        protected final Object2IntOpenHashMap<Holder<Enchantment>> resultEnch;
+
+        public boolean isFinal = false;
+
+        public int lvlCost = 0;
+        public int xpCost = 0;
+        public boolean hasConflictEnch = false;
+        public boolean hasConflictionResolved = false;
+        public boolean hasAnyEnchApplied = false;
 
         public ChannelMergeProcess(EnchMergeChannel channel, Object2IntOpenHashMap<Holder<Enchantment>> baseEnch) {
             this.channel = channel;
             this.resultEnch = new Object2IntOpenHashMap<>(baseEnch);
         }
 
-        @Override
+        /**
+         * Modifiable result enchantments map.
+         * @return current building enchantments.
+         */
+        public Object2IntOpenHashMap<Holder<Enchantment>> getResultEnch() {
+            return resultEnch;
+        }
+
+        /**
+         * Should be called when the process is final
+         * @return result enchantments
+         */
+        @Override @Unmodifiable
         public Map<Holder<Enchantment>, Integer> enchantments() {
+            if(!isFinal){}
             return resultEnch;
         }
 
         @Override
         public int xpCost() {
-            return xpCost;
+            return EnchUtil.transformLevelToXpCost(lvlCost) + xpCost;
         }
 
         @Override
@@ -84,10 +102,10 @@ public class EnchMergeChannel implements IEnchMergeChannel {
 
         @Override
         public MergeResult add(MergeResult other) {
-            if(other instanceof  ChannelMergeProcess process){
-
-                process.enchantments().putAll(resultEnch);
+            if(other instanceof ChannelMergeProcess process){
+                process.resultEnch.putAll(resultEnch);
                 process.xpCost += xpCost;
+                process.lvlCost += lvlCost;
                 process.hasAnyEnchApplied |= hasAnyEnchApplied;
                 process.hasConflictEnch |= hasConflictEnch;
                 process.hasConflictionResolved |= hasConflictionResolved;
