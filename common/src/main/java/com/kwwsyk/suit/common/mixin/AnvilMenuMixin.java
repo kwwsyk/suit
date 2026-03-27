@@ -21,11 +21,10 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(AnvilMenu.class)
 public abstract class AnvilMenuMixin extends ItemCombinerMenuMixin implements IAnvilMenuExtension {
@@ -44,6 +43,7 @@ public abstract class AnvilMenuMixin extends ItemCombinerMenuMixin implements IA
     private String itemName;
 
     @Override
+    @SuppressWarnings("All")
     public int getXpCost() {
         return suit$costXp.get();
     }
@@ -56,7 +56,7 @@ public abstract class AnvilMenuMixin extends ItemCombinerMenuMixin implements IA
             cancellable = true
     )
     public void suit$rebuildAnvilMechanic(CallbackInfo ci) {
-        if(!ServerConfigs.DEBUG_ANVIL_ENCH_MERGE.get()) return;
+        if(!ServerConfigs.DEBUG_ANVIL_ENCH_MERGE_TAKE_OVER.get()) return;
         ItemStack base = this.inputSlots.getItem(0);
         this.cost.set(1);
         this.suit$costXp.set(0);//additional xp cost
@@ -162,8 +162,8 @@ public abstract class AnvilMenuMixin extends ItemCombinerMenuMixin implements IA
                     repairCostData = addition.getOrDefault(DataComponents.REPAIR_COST, 0);
                 }
 
-                if (repairCost > 0 || suit$repairXpCost > 0) {//changed
-                    repairCostData = suit$modified_calculateIncreasedRepairCost(repairCostData);
+                if (suit$repairXpCost > 0) {//changed
+                    repairCostData = IAnvilMenuExtension.suit$modified_calculateIncreasedRepairCost(repairCostData);
                 }
 
                 result.set(DataComponents.REPAIR_COST, repairCostData);
@@ -184,9 +184,142 @@ public abstract class AnvilMenuMixin extends ItemCombinerMenuMixin implements IA
         this.cost.set(0);
     }
 
+    ///
+    ///
     @Unique
-    private static int suit$modified_calculateIncreasedRepairCost(int oldRepairCost){
-        return Math.min(oldRepairCost + 1, 39);
+    private boolean suit$enchOverrideApplied = false;
+
+    @Inject(
+            method = "createResult()V",
+            at = @At(
+                    value = "FIELD",
+                    target = "Lnet/minecraft/world/inventory/AnvilMenu;repairItemCountCost:I",
+                    ordinal = 0,
+                    opcode = 181
+            ),
+            locals = LocalCapture.CAPTURE_FAILSOFT
+    )
+    private void suit$takeOverMergeBlock(
+            CallbackInfo ci,
+            ItemStack base,
+            int repairCost,
+            long basicCost,
+            int renameCost,
+            ItemStack result,
+            ItemStack addition,
+            ItemEnchantments.Mutable resultEnch
+    ) {
+        if (!ServerConfigs.DEBUG_ANVIL_ENCH_MERGE.get()) {
+            suit$enchOverrideApplied = false;
+            return;
+        }
+        if(addition.isEmpty()) return;
+        int suit$repairXpCost = 0;
+        this.repairItemCountCost = 0;
+
+        //start inject at such location
+        boolean enchBookFlag = addition.has(DataComponents.STORED_ENCHANTMENTS);
+        if (result.isDamageableItem() && result.getItem().isValidRepairItem(base, addition)) {
+            int repairAmount = Math.min(result.getDamageValue(), result.getMaxDamage() / 4);
+            if (repairAmount <= 0) {
+                suit$enchOverrideApplied = false;
+                return;
+            }
+
+            int itemCountCost;
+            for (itemCountCost = 0; itemCountCost < addition.getCount(); itemCountCost++) {
+                int dmgValue = result.getDamageValue() - repairAmount;
+                result.setDamageValue(dmgValue);
+                suit$repairXpCost += 7;//repairCost++; Suit change: cost of repairing with ingredient is 7 * count
+                repairAmount = Math.min(result.getDamageValue(), result.getMaxDamage() / 4);
+            }
+
+            this.repairItemCountCost = itemCountCost;
+        } else {
+            if (!enchBookFlag && (!result.is(addition.getItem()) || !result.isDamageableItem())) {
+                suit$enchOverrideApplied = false;
+                return;
+            }
+
+            if (result.isDamageableItem() && !enchBookFlag) {
+                int endurance = base.getMaxDamage() - base.getDamageValue();
+                int additionEndurance = addition.getMaxDamage() - addition.getDamageValue();
+                int newEndurance = endurance + additionEndurance + result.getMaxDamage() * 12 / 100;
+                int newDmg = result.getMaxDamage() - newEndurance;
+                if (newDmg < 0) {
+                    newDmg = 0;
+                }
+
+                if (newDmg < result.getDamageValue()) {
+                    result.setDamageValue(newDmg);
+                    suit$repairXpCost += 16;//repairCost += 2; Use trans Lvl to Xp rule
+                }
+            }
+
+            MergeResult mergeResult = EnchMerger.anvilMergeEnchantments(base, addition, enchBookFlag, player);
+
+            resultEnch.removeIf(Predicates.alwaysTrue());//remove all enchantments
+            mergeResult.enchantments().forEach(resultEnch::set);
+
+            //EnchantmentHelper.setEnchantments(result, resultEnch.toImmutable());
+            //will be done in next blocks
+
+            suit$repairXpCost += mergeResult.xpCost();
+
+            this.cost.set(1);
+            this.suit$costXp.set(suit$repairXpCost + this.suit$costXp.get());
+
+            suit$enchOverrideApplied = suit$repairXpCost != 0;
+        }
+    }
+
+    @Redirect(
+            method = "createResult",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/world/item/ItemStack;isEmpty()Z"
+            ),
+            slice = @Slice(
+                    from = @At(
+                            value = "FIELD",
+                            target = "Lnet/minecraft/world/inventory/AnvilMenu;repairItemCountCost:I",
+                            ordinal = 0,
+                            opcode = 181
+                    ),
+                    to = @At(
+                            value = "INVOKE",
+                            target = "Lnet/minecraft/world/item/ItemStack;has(Lnet/minecraft/core/component/DataComponentType;)Z"
+                    )
+            )
+    )
+    private boolean suit$jmpIfBlock(ItemStack instance){
+        return suit$enchOverrideApplied || instance.isEmpty();
+    }
+
+    @ModifyVariable(
+            method = "createResult()V",
+            at = @At(value = "LOAD"),
+            slice = @Slice(
+                    from = @At(
+                            value = "INVOKE",
+                            target = "Lnet/minecraft/util/Mth;clamp(JJJ)J"
+                    ),
+                    to = @At(
+                            value = "INVOKE",
+                            target = "Lnet/minecraft/world/inventory/DataSlot;get()I"
+                    )
+            ),
+            ordinal = 0,
+            require = 0
+    )
+    private int suit$preventClearAfterRename(int i) {
+        if (!ServerConfigs.DEBUG_ANVIL_ENCH_MERGE.get()) {
+            return i;
+        }
+        if (i <= 0) {
+            return 1;
+        }
+        return i;
     }
 
     @Inject(
@@ -210,7 +343,7 @@ public abstract class AnvilMenuMixin extends ItemCombinerMenuMixin implements IA
             require = 0
     )
     public void sui$chargeOptimalLevels(Player player, int level) {
-        player.giveExperienceLevels(EnchUtil.transformLevelToXpCost(level));
+        //player.giveExperienceLevels(EnchUtil.transformLevelToXpCost(level));
         player.giveExperienceLevels(-this.suit$costXp.get());
     }
 }

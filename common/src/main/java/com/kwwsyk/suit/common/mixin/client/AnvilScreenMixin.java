@@ -42,7 +42,7 @@ public class AnvilScreenMixin extends ACSMixin{
             cancellable = true
     )
     protected void inject$renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY, CallbackInfo ci){
-        if(!ServerConfigs.DEBUG_ANVIL_ENCH_MERGE.get()) return;
+        if(!ServerConfigs.DEBUG_ANVIL_ENCH_MERGE_TAKE_OVER.get()) return;
         int i = suit$getXpCost();
         if (i > 0) {
             int j = 8453920;

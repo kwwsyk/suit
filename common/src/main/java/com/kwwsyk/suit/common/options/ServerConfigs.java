@@ -23,6 +23,13 @@ public final class ServerConfigs {
     public static final PickupHelperOptions PICKUP_HELPER = register(
             new PickupHelperOptions()
     );
+    public static final ConfigEntryImpl.BooleanEntry DEBUG_ANVIL_ENCH_MERGE_TAKE_OVER = register(
+            new ConfigEntryImpl.BooleanEntry("debug_anvil_ench_merge_take_over",
+                    new String[]{"Debug mode for enchantment merging"},
+                    true
+            )
+    );
+
     public static final ConfigEntryImpl.BooleanEntry DEBUG_ANVIL_ENCH_MERGE = register(
             new ConfigEntryImpl.BooleanEntry("debug_anvil_ench_merge",
                     new String[]{"Debug mode for enchantment merging"},
