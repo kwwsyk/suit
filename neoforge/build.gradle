@@ -24,6 +24,16 @@ neoForge {
         }
         data {
             data()
+            programArguments.addAll '--mod', 'suit', // insert your own mod id
+                    '--output', file('src/generated/resources').getAbsolutePath(),
+                    '--all'
+        }
+        dataVanilla{
+            data()
+            systemProperty("suit.datagen.target", "vanilla")
+            programArguments.addAll '--mod', 'suit', // insert your own mod id
+                    '--output', file('src/generated/vanillaResources').getAbsolutePath(),
+                    '--all'
         }
         server {
             server()

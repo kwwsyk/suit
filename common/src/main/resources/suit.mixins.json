@@ -12,6 +12,9 @@
     "ItemCombinerMenuMixin",
     "ItemStackMixin",
     "MapItemMixin",
+    "block.BlockBehaviorMixin",
+    "block.BrushableBlockEntityMixin",
+    "block.BrushableBlockMixin",
     "block.CactusBlockMixin",
     "block.MossBlockMixin",
     "block.SugarCaneBlockMixin"

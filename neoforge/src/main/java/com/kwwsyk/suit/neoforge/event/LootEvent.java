@@ -1,9 +1,11 @@
 package com.kwwsyk.suit.neoforge.event;
 
 import com.kwwsyk.suit.common.options.ServerConfigs;
+import com.kwwsyk.suit.common.util.BrushableBlockEntityExt;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.entity.BrushableBlockEntity;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -18,6 +20,12 @@ import java.util.List;
 public class LootEvent {
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onBlockDrops(BlockDropsEvent event){
+        if(event.getBlockEntity() instanceof BrushableBlockEntity brushableBlockEntity){
+            var ext = (BrushableBlockEntityExt)brushableBlockEntity;
+            Player breakerPlayer = event.getBreaker() instanceof Player player ? player : null;
+            event.getDrops().add(ext.suit$getItemEntity(event.getLevel(), ext.suit$getDropItem(breakerPlayer)));
+        }
+
         List<ItemEntity> drops = event.getDrops();
         if(ServerConfigs.PICKUP_HELPER.ITEM_DROPS.PROTECT_DROPS.get()){
             drops.forEach(

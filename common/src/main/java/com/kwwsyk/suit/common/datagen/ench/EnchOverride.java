@@ -1,5 +1,6 @@
 package com.kwwsyk.suit.common.datagen.ench;
 
+import com.kwwsyk.suit.common.Constants;
 import com.kwwsyk.suit.common.datagen.DatapackCompatibility;
 import net.minecraft.advancements.critereon.*;
 import net.minecraft.core.HolderGetter;
@@ -163,44 +164,34 @@ public class EnchOverride {
         //modify thorns ench
         //attacker dmg: 0.15F * enchLvl * dmg
         //item dmg: 2.0F / enchLvl
-        register(
-                context,
-                THORNS,
-                Enchantment.enchantment(
-                                Enchantment.definition(
-                                        holdergetter2.getOrThrow(ItemTags.ARMOR_ENCHANTABLE),
-                                        holdergetter2.getOrThrow(ItemTags.CHEST_ARMOR_ENCHANTABLE),
-                                        1,
-                                        3,
-                                        Enchantment.dynamicCost(10, 20),
-                                        Enchantment.dynamicCost(60, 20),
-                                        8,
-                                        EquipmentSlotGroup.ANY
-                                )
-                        )
-                        .withEffect(
-                                EnchantmentEffectComponents.POST_ATTACK,
-                                EnchantmentTarget.VICTIM,
-                                EnchantmentTarget.ATTACKER,
-                                AllOf.entityEffects(
-                                        new DamageEntity(LevelBasedValue.constant(1.0F), LevelBasedValue.constant(6.0F), holdergetter.getOrThrow(DamageTypes.THORNS)),
-                                        new DamageItem(new LevelBasedValue.Fraction(LevelBasedValue.constant(2.0F), LevelBasedValue.perLevel(1.0F)))
-                                ),
-                                LootItemRandomChanceCondition.randomChance(EnchantmentLevelProvider.forEnchantmentLevel(LevelBasedValue.perLevel(0.15F)))
-                                //current thorns effect, todo to turn off with special flag
-                        )
-                        .withEffect(
-                                EnchantmentEffectComponents.POST_ATTACK,
-                                EnchantmentTarget.VICTIM,
-                                EnchantmentTarget.ATTACKER,
-                                AllOf.entityEffects(
-                                        new LegacyDamageEntity(LevelBasedValue.constant(0.15F), holdergetter.getOrThrow(DamageTypes.THORNS)),
-                                        new DamageItem(new LevelBasedValue.Fraction(LevelBasedValue.constant(2.0F), LevelBasedValue.perLevel(1.0F)))
-                                ),
-                                LootItemRandomChanceCondition.randomChance(EnchantmentLevelProvider.forEnchantmentLevel(LevelBasedValue.perLevel(0F)))
-                                //legacy thorns effect, todo tobe implemented and turn on with special flag
-                        )
-        );
+        if (!Constants.isVanillaDatagen())
+        {
+            register(
+                    context,
+                    THORNS,
+                    Enchantment.enchantment(
+                                    Enchantment.definition(
+                                            holdergetter2.getOrThrow(ItemTags.ARMOR_ENCHANTABLE),
+                                            holdergetter2.getOrThrow(ItemTags.CHEST_ARMOR_ENCHANTABLE),
+                                            1,
+                                            3,
+                                            Enchantment.dynamicCost(10, 20),
+                                            Enchantment.dynamicCost(60, 20),
+                                            8,
+                                            EquipmentSlotGroup.ANY
+                                    )
+                            )
+                            .withEffect(
+                                    EnchantmentEffectComponents.POST_ATTACK,
+                                    EnchantmentTarget.VICTIM,
+                                    EnchantmentTarget.ATTACKER,
+                                    AllOf.entityEffects(
+                                            new LegacyDamageEntity(LevelBasedValue.constant(0.15F), holdergetter.getOrThrow(DamageTypes.THORNS)),
+                                            new DamageItem(new LevelBasedValue.Fraction(LevelBasedValue.constant(2.0F), LevelBasedValue.perLevel(1.0F)))
+                                    )
+                            )
+            );
+        }
         //attack ench modify
         //let smite and bane_of_arthropods include 1.25f universal damage effect
         register(
@@ -338,7 +329,7 @@ public class EnchOverride {
                                         EquipmentSlotGroup.MAINHAND
                                 )
                         )
-                        //.exclusiveWith(holdergetter1.getOrThrow(EnchantmentTags.BOW_EXCLUSIVE)) not exclusive with mending
+                        .exclusiveWith(holdergetter1.getOrThrow(EnchantmentTags.BOW_EXCLUSIVE)) //resolved
                         .withEffect(
                                 EnchantmentEffectComponents.AMMO_USE,
                                 new SetValue(LevelBasedValue.constant(0.0F)),
