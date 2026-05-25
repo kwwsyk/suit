@@ -1,0 +1,10 @@
+package com.kwwsyk.suit.skin.mixin;
+
+import net.minecraft.client.gui.Gui;
+import org.spongepowered.asm.mixin.Mixin;
+
+@Mixin(Gui.class)
+public class GuiMixin {
+
+
+}

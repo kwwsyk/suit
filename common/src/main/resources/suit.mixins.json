@@ -13,6 +13,7 @@
     "ItemCombinerMenuMixin",
     "ItemStackMixin",
     "MapItemMixin",
+    "PlayerMixin",
     "block.BlockBehaviorMixin",
     "block.BrushableBlockEntityMixin",
     "block.BrushableBlockMixin",
@@ -21,10 +22,8 @@
     "block.SugarCaneBlockMixin"
   ],
   "client": [
-    "client.ACSMixin",
-    "client.AnvilScreenMixin",
-    "client.FogWiper",
-    "client.GuiMixin"
+    "com.kwwsyk.suit.enchant.mixin.client.ACSMixin",
+    "com.kwwsyk.suit.enchant.mixin.client.AnvilScreenMixin"
   ],
   "server": [],
   "injectors": {

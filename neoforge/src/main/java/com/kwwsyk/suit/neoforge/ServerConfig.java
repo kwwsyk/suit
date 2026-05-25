@@ -6,7 +6,6 @@ import com.kwwsyk.suit.common.options.config.ConfigEntryImpl;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.util.Arrays;
 import java.util.function.Supplier;
 
 public class ServerConfig {

@@ -1,0 +1,6 @@
+@MethodsReturnNonnullByDefault@ParametersAreNonnullByDefault
+package com.kwwsyk.suit.suit_yield.mixin;
+
+import net.minecraft.MethodsReturnNonnullByDefault;
+
+import javax.annotation.ParametersAreNonnullByDefault;

@@ -47,11 +47,17 @@ plugins {
 rootProject.name = 'Suit'
 
 include('common')
-//include('TreasureMarker')
 
 include('fabric')
 
 include('neoforge')
-//include('TreasureMarker-neo')
 
 //include('forge')
+include 'SuitSkin'
+include 'SuitSkin-Neoforge'
+include 'SuitEnchant'
+include 'SuitEnchant-Neoforge'
+include 'SuitMisc'
+include 'SuitMisc-Neoforge'
+include 'SuitYield'
+include 'SuitYield-Neoforge'

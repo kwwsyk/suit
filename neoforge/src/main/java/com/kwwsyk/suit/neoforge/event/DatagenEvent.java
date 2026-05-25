@@ -1,24 +1,20 @@
 package com.kwwsyk.suit.neoforge.event;
 
 import com.kwwsyk.suit.common.Constants;
-import com.kwwsyk.suit.common.datagen.ench.EnchOverride;
 import com.kwwsyk.suit.common.datagen.loot.BrushLootSubProvider;
 import com.kwwsyk.suit.common.datagen.loot.SuitEntityLoots;
 import com.kwwsyk.suit.common.datagen.loot.SuitLootTableProvider;
 import com.kwwsyk.suit.common.datagen.loot.SuitVanillaBlockLoots;
-import com.kwwsyk.suit.common.datagen.tag.VanillaRemoveEnchConfliction;
+import com.kwwsyk.suit.common.datagen.recipe.SuitRecipeProvider;
 import com.kwwsyk.suit.neoforge.data.SuitDmgTypeTagsProvider;
 import com.kwwsyk.suit.neoforge.data.SuitGlobalLootModifierProvider;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistrySetBuilder;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.loot.LootTableProvider;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.TagKey;
-import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -40,12 +36,6 @@ public class DatagenEvent {
         CompletableFuture<HolderLookup.Provider> lookupProvider = event.getLookupProvider();
 
         generator.addProvider(true, new SuitDmgTypeTagsProvider(output, lookupProvider));
-        generator.addProvider(true, new VanillaRemoveEnchConfliction(output, lookupProvider) {
-            @Override
-            protected void platform$removeTag(TagKey<Enchantment> tag) {
-                tag(tag).replace(true);
-            }
-        });
         generator.addProvider(true, new SuitLootTableProvider(output, lookupProvider, List.of(
                 new LootTableProvider.SubProviderEntry(BrushLootSubProvider::new, LootContextParamSets.BLOCK),
                 new LootTableProvider.SubProviderEntry(provider -> new SuitVanillaBlockLoots(provider){
@@ -59,13 +49,10 @@ public class DatagenEvent {
                 }, LootContextParamSets.ENTITY)
         )));
         generator.addProvider(true, new SuitGlobalLootModifierProvider(output, lookupProvider));
+        generator.addProvider(true, new SuitRecipeProvider(output, lookupProvider));
 
 
         RegistrySetBuilder registrySetBuilder = new RegistrySetBuilder();
-        registrySetBuilder.add(
-                Registries.ENCHANTMENT,
-                EnchOverride::bootstrap
-        );
 
 
         //event.createDatapackRegistryObjects(registrySetBuilder);

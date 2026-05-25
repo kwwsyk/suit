@@ -7,7 +7,7 @@
   "mixins": [
   ],
   "client": [
-    "OptionsMixin"
+    "com.kwwsyk.suit.skin.mixin.OptionsMixin"
   ],
   "server": [],
   "injectors": {

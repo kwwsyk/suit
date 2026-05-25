@@ -4,11 +4,8 @@ import com.kwwsyk.suit.common.Constants;
 import com.kwwsyk.suit.common.datagen.loot.SuitEntityLoots;
 import com.kwwsyk.suit.neoforge.data.loot.AddPoolLootModifier;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.neoforged.neoforge.common.data.GlobalLootModifierProvider;
-import net.neoforged.neoforge.common.loot.AddTableLootModifier;
 import net.neoforged.neoforge.common.loot.LootTableIdCondition;
 
 import java.util.List;
