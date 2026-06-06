@@ -1,5 +1,6 @@
 package com.kwwsyk.suit.skin.api;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.resources.ResourceLocation;
@@ -7,18 +8,23 @@ import net.minecraft.world.entity.player.Player;
 
 public class VanillaHarmingEffectIndicator extends AfterRenderLastHearts implements OnRenderHeartsStart{
 
+    private Instance instance;
+
     protected VanillaHarmingEffectIndicator() {
         super(-0);
     }
 
     @Override
     protected void doRenderTheLastHearts(int indexReversed, GuiGraphics guiGraphics, int x, int y, boolean hardcore, boolean halfHeart, boolean blinking) {
-
+        assert instance != null;
+        RenderSystem.enableBlend();
+        instance.doRenderTheLastHearts(indexReversed, guiGraphics, x, y, hardcore, halfHeart, blinking);
+        RenderSystem.disableBlend();
     }
 
     @Override
     public void beforeRenderHearts(GuiGraphics guiGraphics, Player player, int x, int y, int height, int offsetHeartIndex, float maxHealth, int currentHealth, int displayHealth, int absorptionAmount, boolean renderHighlight) {
-
+        //instance = new Instance()
     }
 
     public static class Instance extends AfterRenderLastHearts  {
@@ -116,5 +122,10 @@ public class VanillaHarmingEffectIndicator extends AfterRenderLastHearts impleme
                             +(blinking ?  BLINKING_SUFFIX : "")
             );
         }
+    }
+
+    public static class DamageCalculator {
+
+
     }
 }
