@@ -1,13 +1,14 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "com.kwwsyk.suit.skin.mixin",
+  "package": "com.kwwsyk.suit.skin.neoforge.mixin",
   "refmap": "${mod_id}.refmap.json",
   "compatibilityLevel": "JAVA_18",
   "mixins": [
   ],
   "client": [
-    "FogWiper"
+    "GuiMixin",
+    "OptionsMixin"
   ],
   "server": [],
   "injectors": {

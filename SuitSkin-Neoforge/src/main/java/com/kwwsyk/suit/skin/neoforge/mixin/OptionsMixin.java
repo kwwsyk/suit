@@ -1,8 +1,7 @@
-package com.kwwsyk.suit.skin.mixin;
+package com.kwwsyk.suit.skin.neoforge.mixin;
 
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
-import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArg;
@@ -29,7 +28,7 @@ public class OptionsMixin {
             index = 3,
             slice = @Slice(
                     from = @At(value = "CONSTANT", args = "stringValue=options.gamma"),
-                    to = @At(value = "FIELD", target = "Lnet/minecraft/client/Options;gamma:Lnet/minecraft/client/OptionInstance;", opcode = Opcodes.PUTFIELD)
+                    to = @At(value = "FIELD", target = "Lnet/minecraft/client/Options;gamma:Lnet/minecraft/client/OptionInstance;", opcode = 181)//org.objectweb.asm.Opcodes.PUTFIELD = 181, cannot import
             ),
             require = 1
     )
