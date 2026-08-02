@@ -8,7 +8,7 @@
     "AnvilMenuMixin",
     "EnchantmentMenuMixin",
     "EnchTableBlockMixin",
-    "ExperienceOrbMixin",
+    "com.kwwsyk.suit.suit_yield.mixin.ExperienceOrbMixin",
     "ItemCombinerMenuMixin",
     "PlayerMixin"
   ],

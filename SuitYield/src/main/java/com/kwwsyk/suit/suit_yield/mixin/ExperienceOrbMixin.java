@@ -1,6 +1,6 @@
-package com.kwwsyk.suit.enchant.mixin;
+package com.kwwsyk.suit.suit_yield.mixin;
 
-import com.kwwsyk.suit.enchant.ServerConfigs;
+
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.player.Player;

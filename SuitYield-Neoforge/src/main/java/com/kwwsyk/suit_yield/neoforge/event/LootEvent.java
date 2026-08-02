@@ -1,7 +1,7 @@
-package com.kwwsyk.suit.neoforge.event;
+package com.kwwsyk.suit_yield.neoforge.event;
 
-import com.kwwsyk.suit.common.options.ServerConfigs;
-import com.kwwsyk.suit.common.util.BrushableBlockEntityExt;
+import com.kwwsyk.suit_yield.ServerConfigs;
+import com.kwwsyk.suit_yield.BrushableBlockEntityExt;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;

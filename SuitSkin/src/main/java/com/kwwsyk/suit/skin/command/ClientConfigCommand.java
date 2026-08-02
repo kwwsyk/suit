@@ -1,6 +1,7 @@
-package com.kwwsyk.suit.skin.config;
+package com.kwwsyk.suit.skin.command;
 
 import com.kwwsyk.suit.common.options.config.command.CommandBuilder;
+import com.kwwsyk.suit.skin.config.ClientConfigs;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.minecraft.commands.CommandSourceStack;
